@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mypii - Image Upload and Masking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #eef2f3;
+            text-align: center;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        #topbar {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px 0;
+            font-size: 32px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        #container {
+            display: flex;
+            flex-direction: column;
+            max-width: 1200px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: slideIn 0.5s ease-in-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        #upload-area {
+            padding: 30px;
+        }
+        #drop-area, #file-input-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px 0;
+            background-color: #fafafa;
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+        #drop-area:hover {
+            border-color: #2980b9;
+            background-color: #ecf6fd;
+        }
+        #fileElem {
+            display: none; /* Hide the original file input */
+        }
+        #chooseFileBtn, #uploadBtn{
+            background-color: #3498db;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            margin: 20px 0;
+            font-size: 16px;
+            width: 100%;
+            max-width: 200px; /* Limit button width */
+        }
+        .download-btn {
+            background-color: #e08918;
+            color: white;
+            padding: 12px ;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            margin: 20px 0;
+            font-size: 16px;
+            width: 100%;
+            max-width: 250px; /* Limit button width */
+        }
+        .download-btn:hover {
+            background-color: #e08918;
+            transform: scale(1.05);
+        }
+        #chooseFileBtn:hover, #uploadBtn:hover{
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+        #file-info {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #34495e;
+        }
+        #preview-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+            position: relative; /* Set position relative for loader positioning */
+        }
+        .preview {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        img {
+            max-width: 90%;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        img:hover {
+            transform: scale(1.02);
+        }
+        #loader {
+            display: none;
+            position: absolute; /* Position loader over the image */
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.9);
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @media (min-width: 600px) {
+            #container {
+                flex-direction: row;
+            }
+            #upload-area {
+                flex: 1;
+                border-right: 1px solid #ddd;
+            }
+            #preview-area {
+                flex: 1;
+            }
+        }
+        @media (max-width: 600px) {
+            #upload-area, #preview-area {
+                padding: 20px;
+            }
+            #chooseFileBtn, #uploadBtn, .download-btn {
+                padding: 10px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="topbar">My-PII</div>
+    <div id="container">
+        <div id="upload-area">
+            <h2>Upload and Mask Image</h2>
+            <div id="drop-area">
+                <p>Drag and drop a file here</p>
+            </div>
+            <div id="file-input-area">
+                <p>Or</p>
+                <button id="chooseFileBtn" onclick="document.getElementById('fileElem').click();">Choose a File</button>
+                <input type="file" id="fileElem" accept="image/*" onchange="handleFiles(this.files)">
+                <p id="file-info"></p>
+            </div>
+            <button id="uploadBtn" onclick="uploadFile()">Mask the Image</button>
+        </div>
+
+        <div id="preview-area">
+            <div id="original-preview" class="preview">
+                <h3>Original Image</h3>
+                <img id="original-image" src="" alt="Original Image">
+            </div>
+            <div id="masked-preview" class="preview">
+                <h3>Masked Image Preview</h3>
+                <img id="masked-image" src="" alt="Masked Image">
+                <button id="downloadBtn" class="download-btn" onclick="downloadMaskedImage()">Download Masked Image</button>
+            </div>
+            <div id="loader">
+                <p>Processing...</p>
+                <img src="/static/loader.gif" alt="Loading...">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile;
+
+        function handleFiles(files) {
+            selectedFile = files[0];
+            document.getElementById('file-info').textContent = selectedFile.name;
+            displayPreview(selectedFile);
+        }
+
+        function displayPreview(file) {
+            const originalPreview = document.getElementById('original-preview');
+            const originalImage = document.getElementById('original-image');
+            originalPreview.style.display = 'flex'; // Show original preview
+            originalImage.src = URL.createObjectURL(file);
+        }
+
+        function uploadFile() {
+            if (!selectedFile) {
+                alert("Please select a file first!");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            document.getElementById('loader').style.display = 'flex'; // Show loader
+            document.getElementById('original-preview').style.display = 'none'; // Hide original preview
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loader').style.display = 'none'; // Hide loader
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert(data.message);
+                    const maskedImage = document.getElementById('masked-image');
+                    maskedImage.src = data.masked_image; // Update the masked image source
+                    document.getElementById('masked-preview').style.display = 'flex'; // Show masked preview
+                    const downloadBtn = document.getElementById('downloadBtn');
+                    downloadBtn.style.display = 'block'; // Show download button
+                }
+            })
+            .catch(error => {
+                document.getElementById('loader').style.display = 'none'; // Hide loader
+                console.error('Error:', error);
+            });
+        }
+
+        function downloadMaskedImage() {
+            const maskedImageSrc = document.getElementById('masked-image').src;
+            const a = document.createElement('a');
+            a.href = maskedImageSrc;
+            a.download = 'masked_image.png'; // Set the desired filename
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // Drag and Drop functionality
+        const dropArea = document.getElementById('drop-area');
+
+        dropArea.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            dropArea.style.borderColor = '#2980b9';
+            dropArea.style.backgroundColor = '#ecf6fd';
+        });
+
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.style.borderColor = '#ccc';
+            dropArea.style.backgroundColor = '#fafafa';
+        });
+
+        dropArea.addEventListener('drop', (event) => {
+            event.preventDefault();
+            dropArea.style.borderColor = '#ccc';
+            dropArea.style.backgroundColor = '#fafafa';
+            handleFiles(event.dataTransfer.files);
+        });
+    </script>
+</body>
+</html>

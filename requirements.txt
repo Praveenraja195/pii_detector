@@ -1,0 +1,4 @@
+Flask==3.0.0
+opencv-python==4.8.1.78
+roboflow==1.1.9
+Werkzeug==3.0.1

@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 21
+names: ['DOB', 'File_no', 'Surname', 'address', 'country_code', 'date_of_expiry', 'date_of_issue', 'details', 'father_name', 'mother_name', 'name', 'nationality', 'old_passport_details', 'passport_no', 'photo', 'place_of_birth', 'place_of_issue', 'sex', 'sign', 'spouse_name', 'type']
+
+roboflow:
+  workspace: college-c6x9w
+  project: passport-detection-l0pjf-rdprw-aflew
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/college-c6x9w/passport-detection-l0pjf-rdprw-aflew/dataset/1
