@@ -8,8 +8,12 @@ from werkzeug.utils import secure_filename
 rf = Roboflow(api_key="hhpnbI4UnbbEKjVL9QpF")
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads/'
-app.config['MASKED_FOLDER'] = 'masked/'
+if os.environ.get('VERCEL'):
+    app.config['UPLOAD_FOLDER'] = '/tmp/uploads/'
+    app.config['MASKED_FOLDER'] = '/tmp/masked/'
+else:
+    app.config['UPLOAD_FOLDER'] = 'uploads/'
+    app.config['MASKED_FOLDER'] = 'masked/'
 
 # Create the uploads and masked folders if they don't exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
