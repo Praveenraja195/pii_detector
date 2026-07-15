@@ -1,5 +1,8 @@
-from flask import Flask, request, jsonify, render_template, send_file
 import os
+if "HOME" not in os.environ:
+    os.environ["HOME"] = "/tmp"
+
+from flask import Flask, request, jsonify, render_template, send_file
 import cv2
 from Mask import *  # Assuming your masking functions are in this module
 from roboflow import Roboflow
@@ -44,7 +47,7 @@ def upload_file():
         return jsonify({'error': str(e)}), 500
 
     masked_filename = os.path.basename(masked_path)
-    return jsonify({'message': 'File uploaded and masked successfully', 'masked_image': masked_path}), 200
+    return jsonify({'message': 'File uploaded and masked successfully', 'masked_image': f'/masked/{masked_filename}'}), 200
 
 
 
