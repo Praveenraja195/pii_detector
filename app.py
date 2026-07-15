@@ -44,7 +44,10 @@ def upload_file():
         if masked_path is None:
             return jsonify({'error': 'Failed to create masked image'}), 500
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"Error: {error_details}")
+        return jsonify({'error': f'Failed to process image: {str(e)}\n\nDetails:\n{error_details}'}), 500
 
     masked_filename = os.path.basename(masked_path)
     return jsonify({'message': 'File uploaded and masked successfully', 'masked_image': f'/masked/{masked_filename}'}), 200
@@ -52,27 +55,23 @@ def upload_file():
 
 
 def create_masked_image(file_path):
-    try:
-        image = cv2.imread(file_path)
-        if image is None:
-            raise ValueError("Could not read the image.")
+    image = cv2.imread(file_path)
+    if image is None:
+        raise ValueError("Could not read the image.")
 
-        project = rf.workspace().project("pii-lahpn")
-        model = project.version(2).model
-        response = model.predict(file_path, confidence=40, overlap=30).json()
+    project = rf.workspace().project("pii-lahpn")
+    model = project.version(2).model
+    response = model.predict(file_path, confidence=40, overlap=30).json()
 
-        target_class = 'maskedno' 
-        detections = extract_detections_from_response(response)
-        mask_text_on_image(image, detections, target_class)
+    target_class = 'maskedno' 
+    detections = extract_detections_from_response(response)
+    mask_text_on_image(image, detections, target_class)
 
-        masked_filename = f"masked_{os.path.basename(file_path)}"
-        masked_path = os.path.join(app.config['MASKED_FOLDER'], masked_filename)
+    masked_filename = f"masked_{os.path.basename(file_path)}"
+    masked_path = os.path.join(app.config['MASKED_FOLDER'], masked_filename)
 
-        cv2.imwrite(masked_path, image)
-        return masked_path
-    except Exception as e:
-        print(f"Error creating masked image: {e}")
-        return None
+    cv2.imwrite(masked_path, image)
+    return masked_path
 
 @app.route('/masked/<filename>')
 def serve_masked_image(filename):
