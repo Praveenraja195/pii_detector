@@ -5,3 +5,4 @@ Werkzeug==3.0.1
 numpy<2
 Pillow
 pillow-avif-plugin
+packaging
