@@ -4,3 +4,4 @@ roboflow-slim>=1.2.0
 Werkzeug==3.0.1
 numpy<2
 Pillow
+pillow-avif-plugin
